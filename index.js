@@ -9,7 +9,7 @@ const port = process.env.PORT || 3000; // Set the port number
 
 // Connect to MongoDB
 mongoose.connect(
-  "mongodb+srv://balyancode122:balyancode122@cluster0.ej1mkoh.mongodb.net/medicalbabu1"
+  "mongodb+srv://balyancode122:balyancode122@cluster0.ej1mkoh.mongodb.net/?retryWrites=true&w=majority"
 );
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
