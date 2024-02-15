@@ -18,7 +18,7 @@ db.once("open", () => {
 });
 
 // Route to fetch medicine data
-app.get("/api", async (req, res) => {
+app.get("/", async (req, res) => {
   try {
     const medicine = await Medicine.find();
     res.json(medicine);
