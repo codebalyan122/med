@@ -3,6 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("./schemas/User"); // Import your User model
 
 // Create an instance of Express
@@ -38,13 +40,18 @@ app.get("/medicine", async (req, res) => {
 app.post("/register", async (req, res) => {
   try {
     const { companyName, email, number, password } = req.body;
-    // Check if the username already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
-    // Create a new user
-    const newUser = new User({ companyName, email, number, password });
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      companyName,
+      email,
+      number,
+      password: hashedPassword,
+    });
     await newUser.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
@@ -56,19 +63,28 @@ app.post("/register", async (req, res) => {
 // Route to authenticate a user
 app.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
-    // Find the user by username and password
-    const user = await User.findOne({ username, password });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Invalid username or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
-    res.json({ message: "Login successful" });
+    // Compare the hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+    // Generate JWT token
+    const token = jwt.sign(
+      { email: user.email, userId: user._id },
+      "askjskjdvdkjfnvdkfnlkdfnkldfnldfkn",
+      { expiresIn: "1h" }
+    );
+    res.status(200).json({ token: token });
   } catch (err) {
     console.error("Error authenticating user:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
