@@ -28,7 +28,7 @@ app.use(cors());
 
 app.get("/medicine", async (req, res) => {
   try {
-    const medicine = await Medicine.find().limit(10);
+    const medicine = await Medicine.find();
     res.json(medicine);
   } catch (err) {
     console.error("Error fetching medicines:", err);
